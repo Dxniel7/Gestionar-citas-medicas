@@ -45,6 +45,7 @@ public class Paciente implements Serializable {
     @Column(name = "curp", nullable = false, length = 18, unique = true)
     private String curp;
 
+    @NotBlank(message = "La fecha de nacimiento es obligatoria")
     @NotNull(message = "La fecha de nacimiento es obligatoria")
     @Temporal(TemporalType.DATE)
     @Column(name = "fechaNacimiento", nullable = false)
