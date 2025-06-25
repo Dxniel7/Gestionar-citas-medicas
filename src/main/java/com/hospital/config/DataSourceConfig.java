@@ -1,11 +1,10 @@
 package com.hospital.config;
 
 import com.zaxxer.hikari.HikariDataSource;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary; 
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
@@ -17,22 +16,28 @@ public class DataSourceConfig {
 
     private final ResourceLoader resourceLoader;
 
+    @Value("${DB_URL}")
+    private String dbUrl;
+
+    @Value("${DB_USERNAME}")
+    private String dbUsername;
+
+    @Value("${DB_PASSWORD}")
+    private String dbPassword;
+
     public DataSourceConfig(ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
     }
 
-    // Para permitir que Spring Boot maneje las propiedades básicas del DataSource
     @Bean
     @Primary // Marca este bean como el DataSource principal
-    @ConfigurationProperties("spring.datasource")
-    public DataSourceProperties dataSourceProperties() {
-        return new DataSourceProperties();
-    }
+    public HikariDataSource dataSource() throws IOException {
+        HikariDataSource dataSource = new HikariDataSource();
 
-    @Bean
-    @ConfigurationProperties("spring.datasource.hikari") // Para propiedades específicas de HikariCP
-    public HikariDataSource dataSource(DataSourceProperties properties) throws IOException {
-        HikariDataSource dataSource = properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
+        // Configura la URL, usuario y contraseña desde las variables de entorno
+        dataSource.setJdbcUrl(dbUrl);  // Asignar DB_URL
+        dataSource.setUsername(dbUsername);  // Asignar DB_USERNAME
+        dataSource.setPassword(dbPassword);  // Asignar DB_PASSWORD
 
         // 1. Cargar el recurso root.crt del classpath
         Resource resource = resourceLoader.getResource("classpath:root.crt");
