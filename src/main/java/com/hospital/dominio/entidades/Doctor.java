@@ -39,10 +39,12 @@ public class Doctor implements Serializable {
     @Column(name = "no_cedula", nullable = false, length = 50, unique = true)
     private String noCedula;
 
+    @NotBlank(message = "La especialidad es obligatoria")
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "idEspecialidad", referencedColumnName = "idEspecialidad", nullable = false)
     private Especialidad especialidad;
 
+    @NotBlank(message = "El usuario es obligatorio")
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL) // <-- MODIFICADO: Se mantiene la relación uno a uno.
     // @MapsId // <-- ELIMINADO: Esta era la línea que forzaba a los IDs a ser iguales.
     @JoinColumn(name = "usuario_id", referencedColumnName = "idUsuario", unique = true) // <-- MODIFICADO: La relación ahora se basa en una nueva columna "usuario_id", que debe ser única.
