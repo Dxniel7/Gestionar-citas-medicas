@@ -20,84 +20,97 @@ public class PdfService {
     private static final Font FONT_HEADER_TABLA = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9); // Un poco más pequeño
     private static final Font FONT_CELDA = FontFactory.getFont(FontFactory.HELVETICA, 8); // Un poco más pequeño
 
-    // --- MÉTODO PARA REPORTE DE DOCTORES (ACTUALIZADO) ---
-    public ByteArrayInputStream generarReporteDoctores(List<Doctor> doctores) {
-        Document document = new Document(PageSize.A4.rotate()); // <-- CAMBIADO a horizontal para más espacio
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+// --- MÉTODO PARA REPORTE DE DOCTORES (A PRUEBA DE FALLOS) ---
+public ByteArrayInputStream generarReporteDoctores(List<Doctor> doctores) {
+    Document document = new Document(PageSize.A4.rotate());
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        try {
-            PdfWriter.getInstance(document, out);
-            document.open();
+    try {
+        PdfWriter.getInstance(document, out);
+        document.open();
+        // ... (código del título)
 
-            // Título
-            Paragraph titulo = new Paragraph("Reporte de Doctores", FONT_TITULO_SECCION);
-            titulo.setAlignment(Element.ALIGN_CENTER);
-            document.add(titulo);
-            document.add(Chunk.NEWLINE);
+        PdfPTable table = new PdfPTable(8);
+        table.setWidthPercentage(100);
+        Stream.of("ID", "Nombre", "Ap. Paterno", "Ap. Materno", "Email", "Teléfono", "Cédula", "Especialidad")
+              .forEach(h -> table.addCell(crearCeldaHeader(h)));
+        
+        for (Doctor doctor : doctores) {
+            table.addCell(new Phrase(doctor.getIdDoctor() != null ? doctor.getIdDoctor().toString() : "N/A", FONT_CELDA));
 
-            // Tabla con 8 columnas
-            PdfPTable table = new PdfPTable(8);
-            table.setWidthPercentage(100);
-            // Cabeceras de la tabla
-            Stream.of("ID", "Nombre", "Ap. Paterno", "Ap. Materno", "Email", "Teléfono", "Cédula", "Especialidad")
-                  .forEach(h -> table.addCell(crearCeldaHeader(h)));
-            
-            // Contenido de la tabla
-            for (Doctor doctor : doctores) {
-                table.addCell(new Phrase(doctor.getIdDoctor().toString(), FONT_CELDA));
+            if (doctor.getUsuario() != null) {
                 table.addCell(new Phrase(doctor.getUsuario().getNombre(), FONT_CELDA));
                 table.addCell(new Phrase(doctor.getUsuario().getApellidoPat(), FONT_CELDA));
                 table.addCell(new Phrase(doctor.getUsuario().getApellidoMat() != null ? doctor.getUsuario().getApellidoMat() : "", FONT_CELDA));
                 table.addCell(new Phrase(doctor.getUsuario().getEmail(), FONT_CELDA));
                 table.addCell(new Phrase(doctor.getUsuario().getTelefono(), FONT_CELDA));
-                table.addCell(new Phrase(doctor.getNoCedula(), FONT_CELDA));
-                table.addCell(new Phrase(doctor.getEspecialidad().getNombre(), FONT_CELDA));
+            } else {
+                table.addCell(new Phrase("N/A", FONT_CELDA));
+                table.addCell(new Phrase("N/A", FONT_CELDA));
+                table.addCell(new Phrase("N/A", FONT_CELDA));
+                table.addCell(new Phrase("N/A", FONT_CELDA));
+                table.addCell(new Phrase("N/A", FONT_CELDA));
             }
-            document.add(table);
-            document.close();
-        } catch (DocumentException e) {
-            e.printStackTrace();
+
+            table.addCell(new Phrase(doctor.getNoCedula(), FONT_CELDA));
+
+            if (doctor.getEspecialidad() != null) {
+                table.addCell(new Phrase(doctor.getEspecialidad().getNombre(), FONT_CELDA));
+            } else {
+                table.addCell(new Phrase("N/A", FONT_CELDA));
+            }
         }
-        return new ByteArrayInputStream(out.toByteArray());
+        document.add(table);
+        document.close();
+    } catch (Exception e) { // Captura cualquier excepción, no solo DocumentException
+        e.printStackTrace();
     }
+    return new ByteArrayInputStream(out.toByteArray());
+}
 
-    // --- MÉTODO PARA REPORTE DE PACIENTES (ACTUALIZADO) ---
-    public ByteArrayInputStream generarReportePacientes(List<Paciente> pacientes) {
-        Document document = new Document(PageSize.A4.rotate()); // <-- CAMBIADO a horizontal
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+// --- MÉTODO PARA REPORTE DE PACIENTES (A PRUEBA DE FALLOS) ---
+public ByteArrayInputStream generarReportePacientes(List<Paciente> pacientes) {
+    Document document = new Document(PageSize.A4.rotate());
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        try {
-            PdfWriter.getInstance(document, out);
-            document.open();
+    try {
+        PdfWriter.getInstance(document, out);
+        document.open();
+        // ... (código del título)
 
-            Paragraph titulo = new Paragraph("Reporte de Pacientes", FONT_TITULO_SECCION);
-            titulo.setAlignment(Element.ALIGN_CENTER);
-            document.add(titulo);
-            document.add(Chunk.NEWLINE);
+        PdfPTable table = new PdfPTable(9);
+        table.setWidthPercentage(100);
+        Stream.of("ID", "Nombre", "Ap. Paterno", "Ap. Materno", "Email", "Teléfono", "CURP", "T. Sangre", "Alergias")
+              .forEach(h -> table.addCell(crearCeldaHeader(h)));
 
-            PdfPTable table = new PdfPTable(9); // 9 columnas
-            table.setWidthPercentage(100);
-            Stream.of("ID", "Nombre", "Ap. Paterno", "Ap. Materno", "Email", "Teléfono", "CURP", "T. Sangre", "Alergias")
-                  .forEach(h -> table.addCell(crearCeldaHeader(h)));
-
-            for (Paciente paciente : pacientes) {
-                table.addCell(new Phrase(paciente.getIdPaciente().toString(), FONT_CELDA));
+        for (Paciente paciente : pacientes) {
+            table.addCell(new Phrase(paciente.getIdPaciente() != null ? paciente.getIdPaciente().toString() : "N/A", FONT_CELDA));
+            
+            if (paciente.getUsuario() != null) {
                 table.addCell(new Phrase(paciente.getUsuario().getNombre(), FONT_CELDA));
                 table.addCell(new Phrase(paciente.getUsuario().getApellidoPat(), FONT_CELDA));
                 table.addCell(new Phrase(paciente.getUsuario().getApellidoMat() != null ? paciente.getUsuario().getApellidoMat() : "", FONT_CELDA));
                 table.addCell(new Phrase(paciente.getUsuario().getEmail(), FONT_CELDA));
                 table.addCell(new Phrase(paciente.getUsuario().getTelefono(), FONT_CELDA));
-                table.addCell(new Phrase(paciente.getCurp(), FONT_CELDA));
-                table.addCell(new Phrase(paciente.getTipoSangre(), FONT_CELDA));
-                table.addCell(new Phrase(paciente.getAlergias() != null ? paciente.getAlergias() : "Ninguna", FONT_CELDA));
+            } else {
+                table.addCell(new Phrase("N/A", FONT_CELDA));
+                table.addCell(new Phrase("N/A", FONT_CELDA));
+                table.addCell(new Phrase("N/A", FONT_CELDA));
+                table.addCell(new Phrase("N/A", FONT_CELDA));
+                table.addCell(new Phrase("N/A", FONT_CELDA));
             }
-            document.add(table);
-            document.close();
-        } catch (DocumentException e) {
-            e.printStackTrace();
+
+            table.addCell(new Phrase(paciente.getCurp(), FONT_CELDA));
+            table.addCell(new Phrase(paciente.getTipoSangre(), FONT_CELDA));
+            table.addCell(new Phrase(paciente.getAlergias() != null ? paciente.getAlergias() : "Ninguna", FONT_CELDA));
         }
-        return new ByteArrayInputStream(out.toByteArray());
+        document.add(table);
+        document.close();
+    } catch (Exception e) { // Captura cualquier excepción
+        e.printStackTrace();
     }
+    return new ByteArrayInputStream(out.toByteArray());
+}
 
         // --- MÉTODO PARA REPORTE DE TIPOS DE USUARIO ---
     public ByteArrayInputStream generarReporteTiposUsuario(List<TipoUsuario> tiposUsuario) {
