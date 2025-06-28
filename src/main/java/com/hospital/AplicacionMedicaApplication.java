@@ -9,9 +9,6 @@ public class AplicacionMedicaApplication {
 
     public static void main(String[] args) {
         // Carga el archivo .env y lo pone en las propiedades del sistema
-        // Esta es la línea corregida:
-        // Dotenv.configure().systemProperties().load(); // <-- ELIMINAR ESTA LÍNEA
-
         // Inicia la aplicación Spring
         SpringApplication.run(AplicacionMedicaApplication.class, args);
     }
