@@ -1,10 +1,12 @@
 package com.hospital.servicios.impl;
 
 import com.hospital.dominio.entidades.CitaConsulta;
+import com.hospital.dominio.entidades.Doctor;
 import com.hospital.servicios.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -105,6 +107,48 @@ public class EmailServiceImpl implements EmailService {
 
         } catch (MessagingException e) {
             System.err.println("Error al enviar el correo de bienvenida HTML: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void enviarEmailConAdjunto(String destinatario, String asunto, String texto, byte[] pdfBytes, String nombreArchivoAdjunto) {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        try {
+            // El 'true' en el constructor habilita el modo multipart
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            
+            helper.setTo(destinatario);
+            helper.setSubject(asunto);
+            helper.setText(texto, true); // El 'true' indica que el texto es HTML
+
+            // Adjuntar el archivo PDF
+            helper.addAttachment(nombreArchivoAdjunto, new ByteArrayResource(pdfBytes));
+
+            mailSender.send(mimeMessage);
+
+        } catch (MessagingException e) {
+            System.err.println("Error al enviar correo con archivo adjunto: " + e.getMessage());
+        }
+    }
+
+     @Override
+    public void enviarBienvenidaDoctor(Doctor doctor) {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            helper.setTo(doctor.getUsuario().getEmail());
+            helper.setSubject("Bienvenido/a al Equipo de la Clínica");
+
+            Context context = new Context();
+            context.setVariable("nombreDoctor", doctor.getUsuario().getApellidoPat());
+
+            String htmlContent = templateEngine.process("bienvenida-doctor", context);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(mimeMessage);
+
+        } catch (MessagingException e) {
+            System.err.println("Error al enviar el correo de bienvenida al doctor: " + e.getMessage());
         }
     }
 }

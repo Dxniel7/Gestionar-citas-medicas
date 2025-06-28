@@ -1,6 +1,7 @@
 package com.hospital.servicios;
 
 import com.hospital.dominio.entidades.CitaConsulta;
+import com.hospital.dominio.entidades.Doctor;
 
 public interface EmailService {
     /**
@@ -22,4 +23,16 @@ public interface EmailService {
      * @param nombre El nombre del nuevo usuario.
      */
     public void enviarNotificacionBienvenida(String destinatario, String nombre);
+
+    void enviarBienvenidaDoctor(Doctor doctor);
+
+    /**
+     * Envía un correo con un archivo PDF adjunto.
+     * @param destinatario El email del receptor.
+     * @param asunto El asunto del correo.
+     * @param texto El cuerpo del correo (puede ser HTML).
+     * @param pdfBytes El contenido del PDF como un array de bytes.
+     * @param nombreArchivoAdjunto El nombre que tendrá el archivo adjunto (ej. "historial.pdf").
+     */
+    void enviarEmailConAdjunto(String destinatario, String asunto, String texto, byte[] pdfBytes, String nombreArchivoAdjunto);
 }

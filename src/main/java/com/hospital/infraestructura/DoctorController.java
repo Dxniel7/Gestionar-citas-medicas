@@ -3,6 +3,7 @@ package com.hospital.infraestructura;
 import com.hospital.dominio.entidades.Doctor;
 import com.hospital.dominio.entidades.Especialidad;
 import com.hospital.servicios.DoctorService;
+import com.hospital.servicios.EmailService;
 import com.hospital.servicios.EspecialidadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,9 @@ public class DoctorController {
 
     @Autowired
     private EspecialidadService especialidadService;
+
+    @Autowired
+    private EmailService emailService;
 
     @GetMapping("/")
     public List<Doctor> getAll() {
@@ -61,6 +65,12 @@ public class DoctorController {
         // 4. Guardar sólo el Doctor (el Usuario se guarda en cascada)
         Doctor saved = doctorService.save(doctor);
 
+        try {
+            emailService.enviarBienvenidaDoctor(saved);
+        } catch (Exception e) {
+            System.err.println("El doctor se guardó, pero falló el envío del correo de bienvenida: " + e.getMessage());
+        }
+        // 5. Retornar el doctor guardado con estado CREATED
         return new ResponseEntity<>(saved, HttpStatus.CREATED);
     }
     // ------------------------------------------------------

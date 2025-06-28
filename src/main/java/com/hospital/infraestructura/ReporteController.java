@@ -7,14 +7,21 @@ import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+
+
 
 @RestController
 @RequestMapping("/api/reportes")
@@ -36,6 +43,7 @@ public class ReporteController {
     @Autowired private RecetaDetalleService recetaDetalleService;
     @Autowired private HistorialClinicoService historialClinicoService;
     @Autowired private RecepcionistaService recepcionistaService;
+    @Autowired private EmailService emailService;
     // ... inyecta aquí los demás servicios que necesites para otros reportes
 
     // --- Endpoint para el reporte de Doctores ---
@@ -235,7 +243,55 @@ public class ReporteController {
         return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_PDF).body(new InputStreamResource(pdf));
     }
 
+    @PostMapping("/historial/paciente/{idPaciente}/enviar-email")
+    public ResponseEntity<?> enviarHistorialPorEmail(@PathVariable Long idPaciente) {
+        
+        // Este endpoint envía el historial clínico del paciente por correo electrónico
+        try {
+            // 1. Validar que el paciente exista
+            Paciente paciente = pacienteService.read(idPaciente);
+            if (paciente == null) {
+                return new ResponseEntity<>(Map.of("error", "Paciente no encontrado con ID: " + idPaciente), HttpStatus.NOT_FOUND);
+            }
 
+            // 2. Obtener los historiales del paciente
+            List<HistorialClinico> historiales = historialClinicoService.obtenerHistorialesPorPaciente(idPaciente);
+            if (historiales.isEmpty()) {
+                return new ResponseEntity<>(Map.of("mensaje", "El paciente no tiene historiales clínicos registrados."), HttpStatus.OK);
+            }
+            
+            // Es importante forzar la carga de datos perezosos aquí
+            for(HistorialClinico h : historiales) {
+                if(h.getDoctor() != null) Hibernate.initialize(h.getDoctor().getUsuario());
+                if(h.getPaciente() != null) Hibernate.initialize(h.getPaciente().getUsuario());
+                if(h.getReceta() != null) Hibernate.initialize(h.getReceta().getRecetaDetalles());
+            }
+
+            // 3. Generar el PDF en memoria
+            ByteArrayInputStream pdfStream = pdfService.generarReporteHistoriales(historiales);
+            byte[] pdfBytes = pdfStream.readAllBytes(); 
+            
+            // 4. Preparar y enviar el correo
+            String destinatario = paciente.getUsuario().getEmail();
+            String asunto = "Su Historial Clínico - Clínica Salud y Bienestar";
+            String nombreArchivo = "HistorialClinico_" + paciente.getUsuario().getApellidoPat() + ".pdf";
+            
+            String cuerpoEmail = "<h1>Envío de su Historial Clínico</h1>"
+                               + "<p>Estimado/a " + paciente.getUsuario().getNombre() + ",</p>"
+                               + "<p>Adjunto a este correo encontrará su historial clínico en formato PDF, tal como lo solicitó.</p>"
+                               + "<p>Cuide su salud.</p>"
+                               + "<p>Atentamente,<br>Clínica Salud y Bienestar</p>";
+
+            emailService.enviarEmailConAdjunto(destinatario, asunto, cuerpoEmail, pdfBytes, nombreArchivo);
+
+            return ResponseEntity.ok(Map.of("mensaje", "El historial clínico ha sido enviado exitosamente al correo: " + destinatario));
+
+        } catch (Exception e) {
+            // Este catch es más útil porque atrapará cualquier error inesperado durante el proceso.
+            e.printStackTrace(); // Imprime el error en la consola paRA depuración
+            return new ResponseEntity<>(Map.of("error", "Ocurrió un error interno al procesar la solicitud."), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
     // --- Sigue este patrón para añadir los endpoints de los demás reportes ---
 
