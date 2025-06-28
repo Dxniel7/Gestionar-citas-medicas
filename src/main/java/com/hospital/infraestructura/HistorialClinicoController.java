@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -19,7 +20,7 @@ public class HistorialClinicoController {
     @Autowired
     private HistorialClinicoService historialClinicoService;
 
-    // --- NUEVAS INYECCIONES NECESARIAS PARA VALIDAR Y CONSTRUIR EL OBJETO ---
+    // Inyectamos los servicios necesarios para manejar las entidades relacionadas
     @Autowired
     private DoctorService doctorService;
     @Autowired
@@ -28,6 +29,8 @@ public class HistorialClinicoController {
     private CitaConsultaService citaConsultaService;
     @Autowired
     private RecetaService recetaService;
+    @Autowired
+    private FileStorageService fileStorageService;
 
     // --- MÉTODOS GET (SIN CAMBIOS, ESTÁN CORRECTOS) ---
     @GetMapping("/paciente/{idPaciente}")
@@ -134,5 +137,33 @@ public class HistorialClinicoController {
         // Sería bueno añadir una verificación de existencia aquí también para devolver 404 si no se encuentra
         historialClinicoService.eliminarHistorialClinico(idHistorial);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Endpoint para subir un archivo y asociarlo a un historial clínico existente.
+     * @param idHistorial El ID del historial clínico al que se adjuntará el archivo.
+     * @param file El archivo enviado en la petición (ej. resultados.pdf).
+     * @return Una respuesta indicando el éxito o fracaso de la operación.
+     */
+    @PostMapping("/{idHistorial}/uploadFile")
+    public ResponseEntity<?> uploadFile(
+            @PathVariable Long idHistorial,
+            @RequestParam("file") MultipartFile file) {
+        
+        try {
+            // --- INICIO DE LA MODIFICACIÓN: Delegar toda la lógica al servicio ---
+            historialClinicoService.guardarYAsociarArchivo(idHistorial, file);
+            // --- FIN DE LA MODIFICACIÓN ---
+            
+            return ResponseEntity.ok(Map.of(
+                    "mensaje", "Archivo subido y asociado al historial exitosamente."
+            ));
+
+        } catch (RuntimeException e) {
+            // Capturar errores como "Historial no encontrado"
+            return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "No se pudo subir el archivo. Error interno."), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

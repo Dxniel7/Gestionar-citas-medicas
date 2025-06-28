@@ -12,10 +12,10 @@ import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Map;
+
 
 @Data
 @NoArgsConstructor
@@ -54,6 +54,12 @@ public class HistorialClinico implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaAlta;
 
+    // Añadimos campos para el archivo ---
+    @Column(name = "archivo_adjunto_path")
+    private String archivoAdjuntoPath; // Guarda el nombre del archivo en el servidor
+
+    @Column(name = "archivo_adjunto_data", insertable = false, updatable = true)
+    private byte[] archivoAdjuntoData;
 
     @NotNull(message = "El doctor es obligatorio")
     @ManyToOne(fetch = FetchType.LAZY)
