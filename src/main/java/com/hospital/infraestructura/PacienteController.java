@@ -1,6 +1,7 @@
 package com.hospital.infraestructura;
 
 import com.hospital.dominio.entidades.Paciente;
+import com.hospital.servicios.EmailService;
 import com.hospital.servicios.PacienteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,8 @@ public class PacienteController {
 
     @Autowired
     private PacienteService pacienteService;
+    @Autowired
+    private EmailService emailService;
 
     // Obtener todos los pacientes
     @GetMapping("/")
@@ -40,7 +43,21 @@ public class PacienteController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Paciente create(@RequestBody Paciente paciente) {
-        return pacienteService.save(paciente);
+        // Primero guardamos el paciente para obtener el objeto completo con su ID
+        Paciente pacienteGuardado = pacienteService.save(paciente);
+
+        // Enviar correo de bienvenida 
+        try {
+            if (pacienteGuardado.getUsuario() != null) {
+                String nombre = pacienteGuardado.getUsuario().getNombre();
+                String email = pacienteGuardado.getUsuario().getEmail();
+                emailService.enviarNotificacionBienvenida(email, nombre);
+            }
+        } catch (Exception e) {
+            // Registrar el error pero no detener el flujo si el correo falla
+            System.err.println("El paciente se guardó correctamente, pero falló el envío del correo de bienvenida: " + e.getMessage());
+        }
+        return pacienteGuardado;
     }
 
     // Actualizar un paciente

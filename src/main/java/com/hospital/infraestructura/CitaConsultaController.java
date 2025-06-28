@@ -32,6 +32,8 @@ public class CitaConsultaController {
     private ConsultorioService consultorioService;
     @Autowired
     private EspecialidadService especialidadService;
+    @Autowired
+    private EmailService emailService;
 
     // --- MÉTODOS GET (MEJORADOS CON @Transactional) ---
     @GetMapping
@@ -75,7 +77,7 @@ public class CitaConsultaController {
                    .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // --- MÉTODO POST RECONSTRUIDO CON EL PATRÓN ROBUSTO ---
+    // --- MÉTODO POST 
     @PostMapping
     public ResponseEntity<?> crearCita(@RequestBody Map<String, Object> request) {
         try {
@@ -118,6 +120,16 @@ public class CitaConsultaController {
 
             // 4. Guardar la nueva cita
             CitaConsulta citaGuardada = citaConsultaService.crearCita(nuevaCita);
+
+            // Enviar correo al crear cita 
+            try {
+                emailService.enviarNotificacionNuevaCita(citaGuardada);
+            } catch (Exception e) {
+                // registrar el error, pero no fallar la transacción
+                // si solo el correo no se pudo enviar.
+                System.err.println("La cita se guardó correctamente, pero falló el envío del correo de notificación: " + e.getMessage());
+            }
+
             return ResponseEntity.status(HttpStatus.CREATED).body(citaGuardada);
 
         } catch (Exception e) {
@@ -145,9 +157,19 @@ public class CitaConsultaController {
                 Long estatusId = Long.valueOf(updates.get("estatusId").toString());
                 Estatus nuevoEstatus = estatusService.read(estatusId);
                 if (nuevoEstatus == null) return ResponseEntity.badRequest().body(Map.of("error", "Estatus con ID " + estatusId + " no existe."));
+                
                 citaExistente.setEstatus(nuevoEstatus);
+
+                // Enviar correo al cancelar cita 
+                if ("Cancelada".equalsIgnoreCase(nuevoEstatus.getNombre())) {
+                    try {
+                        emailService.enviarNotificacionCancelacion(citaExistente, "El estatus de la cita fue actualizado a 'Cancelada'.");
+                    } catch (Exception e) {
+                        System.err.println("La cita se actualizó, pero falló el envío del correo de cancelación: " + e.getMessage());
+                    }
+                }
             }
-            // Aquí puedes añadir lógica similar para cambiar doctor, paciente, etc.
+            // Aquí podemos añadir lógica similar para cambiar doctor, paciente, etc.
             
             CitaConsulta citaActualizada = citaConsultaService.actualizarCita(citaExistente);
             return ResponseEntity.ok(citaActualizada);
@@ -157,7 +179,7 @@ public class CitaConsultaController {
         }
     }
 
-    // --- MÉTODO DELETE MEJORADO ---
+    // --- MÉTODO DELETE
     @DeleteMapping("/{idCita}")
     public ResponseEntity<Void> eliminarCita(@PathVariable Long idCita) {
         if (citaConsultaService.obtenerCitaPorId(idCita).isEmpty()) {
