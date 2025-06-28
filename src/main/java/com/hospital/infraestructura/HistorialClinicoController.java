@@ -2,12 +2,20 @@ package com.hospital.infraestructura;
 
 import com.hospital.dominio.entidades.*; // Importa todas las entidades necesarias
 import com.hospital.servicios.*; // Importa todos los servicios necesarios
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -165,5 +173,30 @@ public class HistorialClinicoController {
         } catch (Exception e) {
             return new ResponseEntity<>(Map.of("error", "No se pudo subir el archivo. Error interno."), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/{idHistorial}/downloadFile")
+    public ResponseEntity<Resource> downloadFile(@PathVariable Long idHistorial) {
+        
+        // 1. Buscar el historial en la base de datos
+        Optional<HistorialClinico> historialOpt = historialClinicoService.obtenerHistorialPorId(idHistorial);
+        
+        // 2. Validar que el historial y los datos del archivo existan
+        if (historialOpt.isEmpty() || historialOpt.get().getArchivoAdjuntoData() == null || historialOpt.get().getArchivoAdjuntoPath() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        HistorialClinico historial = historialOpt.get();
+        String fileName = historial.getArchivoAdjuntoPath();
+        byte[] fileData = historial.getArchivoAdjuntoData();
+
+        // 3. Crear un recurso a partir de los bytes guardados en la base de datos
+        ByteArrayResource resource = new ByteArrayResource(fileData);
+
+        // 4. Construir y devolver la respuesta para la descarga
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM) // Tipo de contenido genérico para descarga
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .body(resource);
     }
 }

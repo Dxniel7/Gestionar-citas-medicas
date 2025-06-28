@@ -1,6 +1,7 @@
 package com.hospital.servicios;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
+import org.springframework.core.io.Resource;
 
 @Service
 public class FileStorageService {
@@ -68,6 +70,20 @@ public class FileStorageService {
 
         } catch (IOException ex) {
             throw new RuntimeException("No se pudo guardar el archivo " + originalFileName, ex);
+        }
+    }
+
+    public Resource loadFileAsResource(String fileName) {
+        try {
+            Path filePath = Paths.get("ruta/a/tu/directorio/archivos").resolve(fileName).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+            if (resource.exists()) {
+                return resource;
+            } else {
+                throw new RuntimeException("Archivo no encontrado: " + fileName);
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException("No se pudo cargar el archivo: " + fileName, ex);
         }
     }
 }

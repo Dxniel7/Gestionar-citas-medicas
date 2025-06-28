@@ -538,7 +538,6 @@ public ByteArrayInputStream generarReportePacientes(List<Paciente> pacientes) {
         return new ByteArrayInputStream(out.toByteArray());
     }
 
-        // --- MÉTODO PARA REPORTE DE HISTORIAL CLÍNICO (EL MÁS DETALLADO) ---
         // --- MÉTODO PARA REPORTE DE HISTORIAL CLÍNICO (VERSIÓN FINAL Y DETALLADA) ---
     public ByteArrayInputStream generarReporteHistoriales(List<HistorialClinico> historiales) {
         Document document = new Document();
@@ -596,6 +595,11 @@ public ByteArrayInputStream generarReportePacientes(List<Paciente> pacientes) {
                 if (historial.getFechaAlta() != null) {
                     document.add(crearParrafoConTitulo("Fecha de Alta"));
                     document.add(crearParrafoContenido(historial.getFechaAlta().toString()));
+                }
+
+                if (historial.getArchivoAdjuntoPath() != null && !historial.getArchivoAdjuntoPath().isEmpty()) {
+                    document.add(crearParrafoConTitulo("Archivo Adjunto"));
+                    document.add(crearParrafoContenido("Nombre del archivo: " + historial.getArchivoAdjuntoPath()));
                 }
                 
                 // Separador para la siguiente ficha, cada una en una nueva página
