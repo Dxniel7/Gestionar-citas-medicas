@@ -2,79 +2,109 @@ package com.hospital.servicios.impl;
 
 import com.hospital.dominio.entidades.CitaConsulta;
 import com.hospital.servicios.EmailService;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 @Service
 public class EmailServiceImpl implements EmailService {
 
     @Autowired
     private JavaMailSender mailSender;
+    //  Inyectar TemplateEngine 
+    @Autowired
+    private TemplateEngine templateEngine;
 
+    // Usar MimeMessage para HTML 
     @Override
     public void enviarNotificacionNuevaCita(CitaConsulta cita) {
-        SimpleMailMessage message = new SimpleMailMessage();
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
-        String emailPaciente = cita.getPaciente().getUsuario().getEmail();
-        String emailDoctor = cita.getDoctor().getUsuario().getEmail();
+            String emailPaciente = cita.getPaciente().getUsuario().getEmail();
+            String emailDoctor = cita.getDoctor().getUsuario().getEmail();
 
-        message.setTo(emailPaciente);
-        message.setCc(emailDoctor); // Poner al doctor en copia
+            helper.setTo(emailPaciente);
+            helper.setCc(emailDoctor);
+            helper.setSubject("Confirmación de Nueva Cita Médica");
 
-        message.setSubject("Confirmación de Nueva Cita Médica");
-        String texto = "Se ha agendado una nueva cita:\n\n"
-                + "Paciente: " + cita.getPaciente().getUsuario().getNombre() + " " + cita.getPaciente().getUsuario().getApellidoPat() + "\n"
-                + "Doctor: " + cita.getDoctor().getUsuario().getNombre() + " " + cita.getDoctor().getUsuario().getApellidoPat() + "\n"
-                + "Especialidad: " + cita.getEspecialidad().getNombre() + "\n"
-                + "Fecha: " + cita.getFecha() + "\n"
-                + "Hora: " + cita.getHora() + "\n"
-                + "Consultorio: " + cita.getConsultorio().getNumero() + "\n\n"
-                + "¡Gracias por su confianza!";
-        message.setText(texto);
+            // Crear el contexto de Thymeleaf y añadir las variables
+            Context context = new Context();
+            context.setVariable("nombrePaciente", cita.getPaciente().getUsuario().getNombre());
+            context.setVariable("nombreDoctor", "Dr. " + cita.getDoctor().getUsuario().getNombre() + " " + cita.getDoctor().getUsuario().getApellidoPat());
+            context.setVariable("especialidad", cita.getEspecialidad().getNombre());
+            context.setVariable("fecha", cita.getFecha().toString());
+            context.setVariable("hora", cita.getHora().toString());
+            context.setVariable("consultorio", cita.getConsultorio().getNumero());
+            
+            // Procesar la plantilla HTML
+            String htmlContent = templateEngine.process("email-nueva-cita", context);
+            helper.setText(htmlContent, true); // El 'true' nos indica que es HTML
 
-        mailSender.send(message);
+            mailSender.send(mimeMessage);
+
+        } catch (MessagingException e) {
+            // Manejar la excepción
+            System.err.println("Error al enviar el correo HTML: " + e.getMessage());
+        }
     }
 
     @Override
     public void enviarNotificacionCancelacion(CitaConsulta cita, String motivo) {
-        SimpleMailMessage message = new SimpleMailMessage();
 
-        String emailPaciente = cita.getPaciente().getUsuario().getEmail();
-        String emailDoctor = cita.getDoctor().getUsuario().getEmail();
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+         try {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            helper.setTo(cita.getPaciente().getUsuario().getEmail());
+            helper.setCc(cita.getDoctor().getUsuario().getEmail());
+            helper.setSubject("Notificación de Cancelación de Cita");
 
-        message.setTo(emailPaciente);
-        message.setCc(emailDoctor);
+            String texto = "<h1>Notificación de Cancelación de Cita</h1>"
+                + "<p>Le informamos que su cita ha sido cancelada.</p>"
+                + "<p><b>Motivo:</b> " + motivo + "</p>"
+                + "<hr>"
+                + "<p><b>Detalles de la cita:</b></p>"
+                + "<ul>"
+                + "<li><b>Paciente:</b> " + cita.getPaciente().getUsuario().getNombre() + " " + cita.getPaciente().getUsuario().getApellidoPat() + "</li>"
+                + "<li><b>Doctor:</b> " + cita.getDoctor().getUsuario().getNombre() + " " + cita.getDoctor().getUsuario().getApellidoPat() + "</li>"
+                + "<li><b>Fecha:</b> " + cita.getFecha() + "</li>"
+                + "</ul>"
+                + "<p>Lamentamos los inconvenientes.</p>";
 
-        message.setSubject("Notificación de Cancelación de Cita");
-        String texto = "Le informamos que su cita ha sido cancelada.\n\n"
-                + "Motivo: " + motivo + "\n\n"
-                + "Detalles de la cita:\n"
-                + "Paciente: " + cita.getPaciente().getUsuario().getNombre() + " " + cita.getPaciente().getUsuario().getApellidoPat() + "\n"
-                + "Doctor: " + cita.getDoctor().getUsuario().getNombre() + " " + cita.getDoctor().getUsuario().getApellidoPat() + "\n"
-                + "Fecha: " + cita.getFecha() + "\n"
-                + "Hora: " + cita.getHora() + "\n\n"
-                + "Lamentamos los inconvenientes.";
-        message.setText(texto);
+            helper.setText(texto, true);
+            mailSender.send(mimeMessage);
 
-        mailSender.send(message);
+        } catch (MessagingException e) {
+            System.err.println("Error al enviar el correo de cancelación: " + e.getMessage());
+        }
     }
 
     @Override
     public void enviarNotificacionBienvenida(String destinatario, String nombre) {
-        SimpleMailMessage message = new SimpleMailMessage();
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            helper.setTo(destinatario);
+            helper.setSubject("¡Bienvenido/a a nuestro Sistema de Citas Médicas!");
 
-        message.setTo(destinatario);
+            // Crear el contexto
+            Context context = new Context();
+            context.setVariable("nombre", nombre);
 
-        message.setSubject("¡Bienvenido/a a nuestro Sistema de Citas Médicas!");
-        String texto = "Hola " + nombre + ",\n\n"
-                + "¡Gracias por registrarte en nuestro sistema de gestión de citas médicas!\n\n"
-                + "Ahora puedes agendar y gestionar tus citas de manera fácil y rápida.\n\n"
-                + "Saludos cordiales,\n"
-                + "El equipo del Hospital";
-        message.setText(texto);
+            // Procesar la plantilla
+            String htmlContent = templateEngine.process("email-bienvenida", context);
+            helper.setText(htmlContent, true);
 
-        mailSender.send(message);
+            mailSender.send(mimeMessage);
+
+        } catch (MessagingException e) {
+            System.err.println("Error al enviar el correo de bienvenida HTML: " + e.getMessage());
+        }
     }
 }
