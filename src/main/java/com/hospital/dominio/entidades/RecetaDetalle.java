@@ -9,8 +9,10 @@ import jakarta.validation.constraints.Size;
 
 import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @Data
 @NoArgsConstructor
@@ -18,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Builder
 @Entity
 @Table(name = "Receta_Detalle", schema = "public")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "idRecetaDetalle") // Identidad única
 public class RecetaDetalle implements Serializable {
     private static final long serialVersionUID = 1L;
 

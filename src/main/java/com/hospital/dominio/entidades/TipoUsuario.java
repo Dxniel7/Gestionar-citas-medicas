@@ -6,8 +6,10 @@ import lombok.*;
 import java.io.Serializable;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @Data
 @NoArgsConstructor
@@ -15,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @Builder
 @Entity
 @Table(name = "Tipo_Usuario", schema = "public")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "idTipoUsuario")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class TipoUsuario implements Serializable {
     private static final long serialVersionUID = 1L;
