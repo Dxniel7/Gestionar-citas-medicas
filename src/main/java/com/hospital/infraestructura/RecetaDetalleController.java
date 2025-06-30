@@ -39,6 +39,9 @@ public class RecetaDetalleController {
     // Crear un nuevo detalle de receta
     @PostMapping
     public ResponseEntity<RecetaDetalle> createRecetaDetalle(@RequestBody RecetaDetalle recetaDetalle) {
+        // Forzamos la creación asegurando que el ID del detalle de la receta sea nulo
+        recetaDetalle.setIdRecetaDetalle(null);
+
         RecetaDetalle savedRecetaDetalle = recetaDetalleService.saveRecetaDetalle(recetaDetalle);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedRecetaDetalle);
     }

@@ -37,7 +37,10 @@ public class EstatusController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Estatus create(@RequestBody Estatus estatus) {
+        public Estatus create(@RequestBody Estatus estatus) {
+        // Forzamos la creación estableciendo el ID a nulo
+        estatus.setIdEstado(null);
+
         return estatusService.save(estatus);
     }
 

@@ -42,6 +42,9 @@ public class MedicamentoController {
     // Guardar un medicamento
     @PostMapping
     public ResponseEntity<Medicamento> createMedicamento(@RequestBody Medicamento medicamento) {
+        // Forzamos la creación asegurando que el ID sea nulo
+        medicamento.setIdMedicamento(null);
+    
         Medicamento savedMedicamento = medicamentoService.save(medicamento);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedMedicamento);
     }

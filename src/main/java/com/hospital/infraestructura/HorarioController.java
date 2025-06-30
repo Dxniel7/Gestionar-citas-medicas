@@ -37,6 +37,9 @@ public class HorarioController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> create(@RequestBody Horario horario) {
+
+        // Forzamos la creación estableciendo el ID del Horario a null
+        horario.setIdHorario(null);
         // Verificar si es un horario de consulta (una hora específica)
         if (horario.getHorario() != null && horario.getHoraInicio() == null && horario.getHoraFin() == null) {
             // Es un horario para consulta, solo se necesita la hora

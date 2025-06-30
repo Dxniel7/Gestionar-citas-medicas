@@ -58,12 +58,15 @@ public class UsuarioController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Usuario create(@RequestBody Usuario usuario) {
+        // Forzamos la creación estableciendo el ID del usuario a nulo
+        usuario.setIdUsuario(null);
+    
         return usuarioService.save(usuario);
     }
 
     // Actualizar un usuario existente
     @PutMapping("/{id}")
-public ResponseEntity<?> update(@RequestBody Usuario usuario, @PathVariable Long id) {
+    public ResponseEntity<?> update(@RequestBody Usuario usuario, @PathVariable Long id) {
     Usuario usuarioActual = usuarioService.read(id);
     Map<String, Object> response = new HashMap<>();
 

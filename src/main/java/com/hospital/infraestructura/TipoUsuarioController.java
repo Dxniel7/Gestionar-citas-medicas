@@ -49,10 +49,13 @@ public class TipoUsuarioController {
         return new ResponseEntity<>(tipoUsuario, HttpStatus.OK);
     }
 
-    // Crear un nuevo tipo de usuario
+   // Crear un nuevo tipo de usuario
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public TipoUsuario create(@RequestBody TipoUsuario tipoUsuario) {
+        // Forzamos la creación asegurando que el ID sea nulo
+        tipoUsuario.setIdTipoUsuario(null);
+
         return tipoUsuarioService.save(tipoUsuario);
     }
 

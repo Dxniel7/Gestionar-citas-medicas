@@ -59,6 +59,7 @@ public class RecepcionistaController {
     @PostMapping
     public ResponseEntity<?> crearRecepcionista(@RequestBody Map<String, Object> request) {
         try {
+            // 1. Extracción de datos (Sin cambios)
             String nombre = (String) request.get("nombre");
             String apellidoPat = (String) request.get("apellidoPat");
             String apellidoMat = (String) request.get("apellidoMat");
@@ -68,37 +69,50 @@ public class RecepcionistaController {
             Long horarioId = Long.valueOf(request.get("horarioId").toString());
             Long consultorioId = Long.valueOf(request.get("consultorioId").toString());
 
-            Horario horario = horarioService.read(horarioId);
-            if (horario == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "El Horario con ID " + horarioId + " no existe."));
-            }
+        // 2. Validación de entidades relacionadas (Sin cambios)
+        Horario horario = horarioService.read(horarioId);
+        if (horario == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "El Horario con ID " + horarioId + " no existe."));
+        }
 
-            Consultorio consultorio = consultorioService.read(consultorioId);
-            if (consultorio == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "El Consultorio con ID " + consultorioId + " no existe."));
-            }
+        Consultorio consultorio = consultorioService.read(consultorioId);
+        if (consultorio == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "El Consultorio con ID " + consultorioId + " no existe."));
+        }
 
-            TipoUsuario tipoUsuario = tipoUsuarioService.findByNombre("Recepcionista");
-            if (tipoUsuario == null) {
-                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "El Tipo de Usuario 'RECEPCIONISTA' no está configurado en la base de datos."));
-            }
-            
-            Usuario nuevoUsuario = new Usuario();
-            nuevoUsuario.setNombre(nombre);
-            nuevoUsuario.setApellidoPat(apellidoPat);
-            nuevoUsuario.setApellidoMat(apellidoMat);
-            nuevoUsuario.setEmail(email);
-            nuevoUsuario.setContrasena(contrasena);
-            nuevoUsuario.setTelefono(telefono);
-            nuevoUsuario.setTipoUsuario(tipoUsuario);
-            
-            Usuario usuarioGuardado = usuarioService.save(nuevoUsuario);
+        TipoUsuario tipoUsuario = tipoUsuarioService.findByNombre("Recepcionista");
+        if (tipoUsuario == null) {
+             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "El Tipo de Usuario 'RECEPCIONISTA' no está configurado en la base de datos."));
+        }
+        
+        // 3. Creación y población del nuevo Usuario
+        Usuario nuevoUsuario = new Usuario();
+        
+        // Forzamos la creación asegurando que el ID del nuevo usuario sea nulo
+        nuevoUsuario.setIdUsuario(null);
 
-            Recepcionista nuevoRecepcionista = new Recepcionista();
-            nuevoRecepcionista.setUsuario(usuarioGuardado);
-            nuevoRecepcionista.setHorario(horario);
-            nuevoRecepcionista.setConsultorio(consultorio);
+        nuevoUsuario.setNombre(nombre);
+        nuevoUsuario.setApellidoPat(apellidoPat);
+        nuevoUsuario.setApellidoMat(apellidoMat);
+        nuevoUsuario.setEmail(email);
+        nuevoUsuario.setContrasena(contrasena);
+        nuevoUsuario.setTelefono(telefono);
+        nuevoUsuario.setTipoUsuario(tipoUsuario);
+        
+        // 4. Guardado explícito del Usuario (Como tú lo tenías)
+        Usuario usuarioGuardado = usuarioService.save(nuevoUsuario);
 
+        // 5. Creación y población del nuevo Recepcionista
+        Recepcionista nuevoRecepcionista = new Recepcionista();
+
+        // Forzamos la creación asegurando que el ID del nuevo recepcionista sea nulo
+        nuevoRecepcionista.setIdRecepcionista(null);
+        
+        nuevoRecepcionista.setUsuario(usuarioGuardado);
+        nuevoRecepcionista.setHorario(horario);
+        nuevoRecepcionista.setConsultorio(consultorio);
+
+            // 6. Guardado del Recepcionista
             Recepcionista recepcionistaGuardado = recepcionistaService.crearRecepcionista(nuevoRecepcionista);
             return ResponseEntity.status(HttpStatus.CREATED).body(recepcionistaGuardado);
 

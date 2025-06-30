@@ -46,7 +46,7 @@ public class PacienteController {
 
         // Forzamos a que el ID sea nulo para asegurar que sea una operación de CREACIÓN.
         // Esto evita que se actualice un paciente existente si el frontend envía un ID por error.
-        paciente.setIdPaciente(null); 
+        paciente.setIdPaciente(null);  
         // Primero guardamos el paciente para obtener el objeto completo con su ID
         Paciente pacienteGuardado = pacienteService.save(paciente);
 

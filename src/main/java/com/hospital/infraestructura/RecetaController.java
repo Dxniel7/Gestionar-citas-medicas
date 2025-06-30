@@ -71,37 +71,41 @@ public class RecetaController {
     // --- MÉTODO POST RECONSTRUIDO CON EL PATRÓN ROBUSTO ---
     @PostMapping
     public ResponseEntity<?> createReceta(@RequestBody Map<String, Object> request) {
-        try {
-            // 1. Extraer datos del JSON aplanado
-            BigDecimal costoConsulta = new BigDecimal(request.get("costoConsulta").toString());
-            Date fecha = new SimpleDateFormat("yyyy-MM-dd").parse((String)request.get("fecha"));
-            Long doctorId = Long.valueOf(request.get("doctorId").toString());
-            Long pacienteId = Long.valueOf(request.get("pacienteId").toString());
+    try {
+        // 1. Extraer datos del JSON aplanado (Sin cambios)
+        BigDecimal costoConsulta = new BigDecimal(request.get("costoConsulta").toString());
+        Date fecha = new SimpleDateFormat("yyyy-MM-dd").parse((String)request.get("fecha"));
+        Long doctorId = Long.valueOf(request.get("doctorId").toString());
+        Long pacienteId = Long.valueOf(request.get("pacienteId").toString());
 
-            // 2. Validar que Doctor y Paciente existan
-            Doctor doctor = doctorService.read(doctorId);
-            if (doctor == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Doctor con ID " + doctorId + " no existe."));
-            }
+        // 2. Validar que Doctor y Paciente existan (Sin cambios)
+        Doctor doctor = doctorService.read(doctorId);
+        if (doctor == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Doctor con ID " + doctorId + " no existe."));
+        }
 
-            Paciente paciente = pacienteService.read(pacienteId);
-            if (paciente == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Paciente con ID " + pacienteId + " no existe."));
-            }
+        Paciente paciente = pacienteService.read(pacienteId);
+        if (paciente == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Paciente con ID " + pacienteId + " no existe."));
+        }
 
-            // 3. Crear el nuevo objeto Receta
-            Receta nuevaReceta = new Receta();
-            nuevaReceta.setCostoConsulta(costoConsulta);
-            nuevaReceta.setFecha(fecha);
-            nuevaReceta.setDoctor(doctor);       // Asignamos el objeto Doctor completo
-            nuevaReceta.setPaciente(paciente);   // Asignamos el objeto Paciente completo
+        // 3. Crear el nuevo objeto Receta
+        Receta nuevaReceta = new Receta();
 
-            // 4. Guardar la nueva receta
-            Receta recetaGuardada = recetaService.save(nuevaReceta);
-            return ResponseEntity.status(HttpStatus.CREATED).body(recetaGuardada);
+        // Forzamos la creación asegurando que el ID de la nueva receta sea nulo
+        nuevaReceta.setIdReceta(null);
+
+        nuevaReceta.setCostoConsulta(costoConsulta);
+        nuevaReceta.setFecha(fecha);
+        nuevaReceta.setDoctor(doctor);       // Asignamos el objeto Doctor completo
+        nuevaReceta.setPaciente(paciente);   // Asignamos el objeto Paciente completo
+
+        // 4. Guardar la nueva receta (Sin cambios)
+        Receta recetaGuardada = recetaService.save(nuevaReceta);
+        return ResponseEntity.status(HttpStatus.CREATED).body(recetaGuardada);
 
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Error al procesar la petición: " + e.getMessage()));
+        return ResponseEntity.badRequest().body(Map.of("error", "Error al procesar la petición: " + e.getMessage()));
         }
     }
 

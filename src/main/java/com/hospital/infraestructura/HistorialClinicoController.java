@@ -60,57 +60,63 @@ public class HistorialClinicoController {
         return ResponseEntity.ok(historiales);
     }
 
-    // --- MÉTODO POST COMPLETAMENTE RECONSTRUIDO ---
+    // --- MÉTODO POST MEJORADO ---
     @PostMapping
     public ResponseEntity<?> crearHistorialClinico(@RequestBody Map<String, Object> request) {
-        try {
-            // 1. Extraer IDs del JSON aplanado
-            Long pacienteId = Long.valueOf(request.get("pacienteId").toString());
-            Long doctorId = Long.valueOf(request.get("doctorId").toString());
-            Long citaId = Long.valueOf(request.get("citaId").toString());
-            Long recetaId = request.get("recetaId") != null ? Long.valueOf(request.get("recetaId").toString()) : null;
+    try {
+        // 1. Extraer IDs del JSON aplanado (Sin cambios)
+        Long pacienteId = Long.valueOf(request.get("pacienteId").toString());
+        Long doctorId = Long.valueOf(request.get("doctorId").toString());
+        Long citaId = Long.valueOf(request.get("citaId").toString());
+        Long recetaId = request.get("recetaId") != null ? Long.valueOf(request.get("recetaId").toString()) : null;
 
-            // 2. Cargar las entidades relacionadas para asegurar que existen
-            Paciente paciente = pacienteService.read(pacienteId);
-            if (paciente == null) return ResponseEntity.badRequest().body(Map.of("error", "Paciente con ID " + pacienteId + " no existe."));
+        // 2. Cargar las entidades relacionadas (Sin cambios)
+        Paciente paciente = pacienteService.read(pacienteId);
+        if (paciente == null) return ResponseEntity.badRequest().body(Map.of("error", "Paciente con ID " + pacienteId + " no existe."));
 
-            Doctor doctor = doctorService.read(doctorId);
-            if (doctor == null) return ResponseEntity.badRequest().body(Map.of("error", "Doctor con ID " + doctorId + " no existe."));
-            
-            CitaConsulta cita = citaConsultaService.obtenerCitaPorId(citaId)
+        Doctor doctor = doctorService.read(doctorId);
+        if (doctor == null) return ResponseEntity.badRequest().body(Map.of("error", "Doctor con ID " + doctorId + " no existe."));
+        
+        CitaConsulta cita = citaConsultaService.obtenerCitaPorId(citaId)
                 .orElseThrow(() -> new RuntimeException("Cita con ID " + citaId + " no encontrada."));
 
-            Receta receta = null;
-            if(recetaId != null) {
-                receta = recetaService.read(recetaId);
-                if (receta == null) return ResponseEntity.badRequest().body(Map.of("error", "Receta con ID " + recetaId + " no existe."));
-            }
-
-            // 3. Crear y poblar el nuevo objeto HistorialClinico
-            HistorialClinico nuevoHistorial = new HistorialClinico();
-            nuevoHistorial.setDiagnostico((String) request.get("diagnostico"));
-            nuevoHistorial.setTratamiento((String) request.get("tratamiento"));
-            nuevoHistorial.setNotas((String) request.get("notas"));
-            nuevoHistorial.setFechaDiagnostico(LocalDate.parse((String) request.get("fechaDiagnostico")));
-            
-            if (request.get("fechaAlta") != null) {
-                nuevoHistorial.setFechaAlta(LocalDate.parse((String) request.get("fechaAlta")));
-            }
-
-            // Asignar las entidades completas
-            nuevoHistorial.setPaciente(paciente);
-            nuevoHistorial.setDoctor(doctor);
-            nuevoHistorial.setCita(cita); // o setCitaConsulta
-            nuevoHistorial.setReceta(receta);
-
-            // 4. Guardar el objeto usando el método de servicio original
-            HistorialClinico historialGuardado = historialClinicoService.crearHistorialClinico(nuevoHistorial);
-            return ResponseEntity.status(HttpStatus.CREATED).body(historialGuardado);
-
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Error al procesar la petición: " + e.getMessage()));
+        Receta receta = null;
+        if(recetaId != null) {
+            receta = recetaService.read(recetaId);
+            if (receta == null) return ResponseEntity.badRequest().body(Map.of("error", "Receta con ID " + recetaId + " no existe."));
         }
+
+        // 3. Crear y poblar el nuevo objeto HistorialClinico
+        HistorialClinico nuevoHistorial = new HistorialClinico();
+        
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Aseguramos que el ID sea nulo para forzar una operación de CREACIÓN
+        nuevoHistorial.setIdHistorial(null);
+        // --- FIN DE LA CORRECCIÓN ---
+
+        nuevoHistorial.setDiagnostico((String) request.get("diagnostico"));
+        nuevoHistorial.setTratamiento((String) request.get("tratamiento"));
+        nuevoHistorial.setNotas((String) request.get("notas"));
+        nuevoHistorial.setFechaDiagnostico(LocalDate.parse((String) request.get("fechaDiagnostico")));
+        
+        if (request.get("fechaAlta") != null) {
+            nuevoHistorial.setFechaAlta(LocalDate.parse((String) request.get("fechaAlta")));
+        }
+
+        // Asignar las entidades completas (Sin cambios)
+        nuevoHistorial.setPaciente(paciente);
+        nuevoHistorial.setDoctor(doctor);
+        nuevoHistorial.setCita(cita);
+        nuevoHistorial.setReceta(receta);
+
+        // 4. Guardar el objeto usando el método de servicio original (Sin cambios)
+        HistorialClinico historialGuardado = historialClinicoService.crearHistorialClinico(nuevoHistorial);
+        return ResponseEntity.status(HttpStatus.CREATED).body(historialGuardado);
+
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(Map.of("error", "Error al procesar la petición: " + e.getMessage()));
     }
+}
 
     // --- MÉTODO PUT MEJORADO ---
     @PutMapping("/{idHistorial}")

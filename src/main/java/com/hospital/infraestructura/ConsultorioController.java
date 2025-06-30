@@ -45,6 +45,9 @@ public class ConsultorioController {
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
     public Consultorio create(@RequestBody Consultorio consultorio) {
+        // Forzamos la creación estableciendo el ID a null
+        consultorio.setIdConsultorio(null); 
+    
         return consultorioService.save(consultorio);
     }
 

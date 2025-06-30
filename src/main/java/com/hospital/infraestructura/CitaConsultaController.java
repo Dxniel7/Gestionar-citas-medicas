@@ -77,65 +77,67 @@ public class CitaConsultaController {
                    .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // --- MÉTODO POST 
-    @PostMapping
-    public ResponseEntity<?> crearCita(@RequestBody Map<String, Object> request) {
+    // --- MÉTODO POST (Corregido y Robusto) ---
+@PostMapping
+public ResponseEntity<?> crearCita(@RequestBody Map<String, Object> request) {
+    try {
+        // 1. Extraer datos del JSON aplanado (esto se queda igual)
+        LocalDate fecha = LocalDate.parse((String) request.get("fecha"));
+        LocalTime hora = LocalTime.parse((String) request.get("hora"));
+        String motivo = (String) request.get("motivo");
+        Long doctorId = Long.valueOf(request.get("doctorId").toString());
+        Long pacienteId = Long.valueOf(request.get("pacienteId").toString());
+        Long estatusId = Long.valueOf(request.get("estatusId").toString());
+        Long consultorioId = Long.valueOf(request.get("consultorioId").toString());
+        Long especialidadId = Long.valueOf(request.get("especialidadId").toString());
+
+        // 2. Validar que todas las entidades relacionadas existan (esto se queda igual)
+        Doctor doctor = doctorService.read(doctorId);
+        if (doctor == null) return ResponseEntity.badRequest().body(Map.of("error", "Doctor con ID " + doctorId + " no existe."));
+
+        Paciente paciente = pacienteService.read(pacienteId);
+        if (paciente == null) return ResponseEntity.badRequest().body(Map.of("error", "Paciente con ID " + pacienteId + " no existe."));
+
+        Estatus estatus = estatusService.read(estatusId);
+        if (estatus == null) return ResponseEntity.badRequest().body(Map.of("error", "Estatus con ID " + estatusId + " no existe."));
+
+        Consultorio consultorio = consultorioService.read(consultorioId);
+        if (consultorio == null) return ResponseEntity.badRequest().body(Map.of("error", "Consultorio con ID " + consultorioId + " no existe."));
+        
+        Especialidad especialidad = especialidadService.read(especialidadId);
+        if (especialidad == null) return ResponseEntity.badRequest().body(Map.of("error", "Especialidad con ID " + especialidadId + " no existe."));
+
+        // 3. Crear el nuevo objeto CitaConsulta
+        CitaConsulta nuevaCita = new CitaConsulta();
+
+        // AÑADIMOS ESTA LÍNEA PARA ASEGURAR UNA OPERACIÓN DE CREACIÓN
+        nuevaCita.setIdCita(null);
+
+        nuevaCita.setFecha(fecha);
+        nuevaCita.setHora(hora);
+        nuevaCita.setMotivo(motivo);
+        nuevaCita.setDoctor(doctor);
+        nuevaCita.setPaciente(paciente);
+        nuevaCita.setEstatus(estatus);
+        nuevaCita.setConsultorio(consultorio);
+        nuevaCita.setEspecialidad(especialidad);
+
+        // 4. Guardar la nueva cita (esto se queda igual)
+        CitaConsulta citaGuardada = citaConsultaService.crearCita(nuevaCita);
+
+        // Enviar correo al crear cita (esto se queda igual)
         try {
-            // 1. Extraer datos del JSON aplanado
-            LocalDate fecha = LocalDate.parse((String) request.get("fecha"));
-            LocalTime hora = LocalTime.parse((String) request.get("hora"));
-            String motivo = (String) request.get("motivo");
-            Long doctorId = Long.valueOf(request.get("doctorId").toString());
-            Long pacienteId = Long.valueOf(request.get("pacienteId").toString());
-            Long estatusId = Long.valueOf(request.get("estatusId").toString());
-            Long consultorioId = Long.valueOf(request.get("consultorioId").toString());
-            Long especialidadId = Long.valueOf(request.get("especialidadId").toString());
-
-            // 2. Validar que todas las entidades relacionadas existan
-            Doctor doctor = doctorService.read(doctorId);
-            if (doctor == null) return ResponseEntity.badRequest().body(Map.of("error", "Doctor con ID " + doctorId + " no existe."));
-
-            Paciente paciente = pacienteService.read(pacienteId);
-            if (paciente == null) return ResponseEntity.badRequest().body(Map.of("error", "Paciente con ID " + pacienteId + " no existe."));
-
-            Estatus estatus = estatusService.read(estatusId);
-            if (estatus == null) return ResponseEntity.badRequest().body(Map.of("error", "Estatus con ID " + estatusId + " no existe."));
-
-            Consultorio consultorio = consultorioService.read(consultorioId);
-            if (consultorio == null) return ResponseEntity.badRequest().body(Map.of("error", "Consultorio con ID " + consultorioId + " no existe."));
-            
-            Especialidad especialidad = especialidadService.read(especialidadId);
-            if (especialidad == null) return ResponseEntity.badRequest().body(Map.of("error", "Especialidad con ID " + especialidadId + " no existe."));
-
-            // 3. Crear el nuevo objeto CitaConsulta
-            CitaConsulta nuevaCita = new CitaConsulta();
-            nuevaCita.setFecha(fecha);
-            nuevaCita.setHora(hora);
-            nuevaCita.setMotivo(motivo);
-            nuevaCita.setDoctor(doctor);
-            nuevaCita.setPaciente(paciente);
-            nuevaCita.setEstatus(estatus);
-            nuevaCita.setConsultorio(consultorio);
-            nuevaCita.setEspecialidad(especialidad);
-
-            // 4. Guardar la nueva cita
-            CitaConsulta citaGuardada = citaConsultaService.crearCita(nuevaCita);
-
-            // Enviar correo al crear cita 
-            try {
-                emailService.enviarNotificacionNuevaCita(citaGuardada);
-            } catch (Exception e) {
-                // registrar el error, pero no fallar la transacción
-                // si solo el correo no se pudo enviar.
-                System.err.println("La cita se guardó correctamente, pero falló el envío del correo de notificación: " + e.getMessage());
-            }
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(citaGuardada);
-
+            emailService.enviarNotificacionNuevaCita(citaGuardada);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Error al procesar la petición: " + e.getMessage()));
+            System.err.println("La cita se guardó correctamente, pero falló el envío del correo de notificación: " + e.getMessage());
         }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(citaGuardada);
+
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(Map.of("error", "Error al procesar la petición: " + e.getMessage()));
     }
+}
 
     // --- MÉTODO PUT RECONSTRUIDO ---
     @PutMapping("/{idCita}")

@@ -36,7 +36,10 @@ public class EspecialidadController {
 
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
-    public Especialidad create(@RequestBody Especialidad especialidad) {
+        public Especialidad create(@RequestBody Especialidad especialidad) {
+        // Forzamos la creación asegurando que el ID sea nulo
+        especialidad.setIdEspecialidad(null);
+
         return especialidadService.save(especialidad);
     }
 

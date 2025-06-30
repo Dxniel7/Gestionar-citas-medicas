@@ -48,6 +48,9 @@ public class DoctorController {
     // ------------------- POST corregido -------------------
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Doctor doctor) {
+
+         doctor.setIdDoctor(null); // Forzamos a que el ID sea nulo para asegurar que sea una operación de CREACIÓN.
+         
         // 1. Extraer el ID de la especialidad que viene en el JSON
         Long idEsp = doctor.getEspecialidad().getIdEspecialidad();
         
