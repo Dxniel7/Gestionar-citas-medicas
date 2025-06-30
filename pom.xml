@@ -84,6 +84,11 @@
             <version>5.5.13</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+
         <!-- Herramientas de Desarrollo y Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
