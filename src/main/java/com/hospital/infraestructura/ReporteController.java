@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -242,11 +243,10 @@ public class ReporteController {
         
         return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_PDF).body(new InputStreamResource(pdf));
     }
-
-    @PostMapping("/historial/paciente/{idPaciente}/enviar-email")
+@PostMapping("/historial/paciente/{idPaciente}/enviar-email")
+    @Transactional(readOnly = true) // <-- COLOCAR LA ANOTACIÓN AQUÍ
     public ResponseEntity<?> enviarHistorialPorEmail(@PathVariable Long idPaciente) {
         
-        // Este endpoint envía el historial clínico del paciente por correo electrónico
         try {
             // 1. Validar que el paciente exista
             Paciente paciente = pacienteService.read(idPaciente);
@@ -260,7 +260,8 @@ public class ReporteController {
                 return new ResponseEntity<>(Map.of("mensaje", "El paciente no tiene historiales clínicos registrados."), HttpStatus.OK);
             }
             
-            // Es importante forzar la carga de datos perezosos aquí
+            // La anotación @Transactional en el método ahora asegura que la sesión permanezca abierta.
+            // Este bucle ahora funcionará correctamente para inicializar los datos.
             for(HistorialClinico h : historiales) {
                 if(h.getDoctor() != null) Hibernate.initialize(h.getDoctor().getUsuario());
                 if(h.getPaciente() != null) Hibernate.initialize(h.getPaciente().getUsuario());
@@ -288,7 +289,7 @@ public class ReporteController {
 
         } catch (Exception e) {
             // Este catch es más útil porque atrapará cualquier error inesperado durante el proceso.
-            e.printStackTrace(); // Imprime el error en la consola paRA depuración
+            e.printStackTrace(); // Imprime el error en la consola para depuración
             return new ResponseEntity<>(Map.of("error", "Ocurrió un error interno al procesar la solicitud."), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
