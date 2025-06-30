@@ -45,7 +45,7 @@ public class Medicamento implements Serializable {
     @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
 
-    @OneToMany(mappedBy = "medicamento", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "medicamento", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     //(value = "medicamentoReference")
     private List<RecetaDetalle> recetaDetalles;
 

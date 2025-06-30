@@ -65,8 +65,11 @@ public class Paciente implements Serializable {
     @JoinColumn(name = "usuario_id", referencedColumnName = "idUsuario", unique = true) // <-- MODIFICADO: La relación ahora se basa en una nueva columna "usuario_id", que debe ser única.
     private Usuario usuario;
 
-    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<CitaConsulta> citas;
+
+    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Receta> recetas;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idHistorial", referencedColumnName = "idHistorial")

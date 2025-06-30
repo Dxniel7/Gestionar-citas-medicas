@@ -28,7 +28,7 @@ public class Especialidad {
     @OneToMany(mappedBy = "especialidad", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CitaConsulta> citas;
 
-    @OneToMany(mappedBy = "especialidad", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "especialidad", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Doctor> doctors;
 
     @JsonProperty("doctors")

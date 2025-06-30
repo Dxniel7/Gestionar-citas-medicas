@@ -39,11 +39,11 @@ public class Horario implements Serializable {
     @Column(name = "hora_fin", nullable = true)  // Cambiado a nullable = true
     private LocalTime horaFin;  // Obligatorio para consultorio
 
-    @OneToMany(mappedBy = "horario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "horario", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<DoctorConsultorio> doctorConsultorios;
 
     
-    @OneToMany(mappedBy = "horario", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "horario", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     //(value = "recepcionista-horario") // Asegúrate de que coincida con el nombre único de la referencia
     private List<Recepcionista> recepcionistas;
 

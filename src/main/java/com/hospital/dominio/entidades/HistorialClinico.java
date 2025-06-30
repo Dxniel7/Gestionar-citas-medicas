@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +59,7 @@ public class HistorialClinico implements Serializable {
     @Column(name = "archivo_adjunto_path")
     private String archivoAdjuntoPath; // Guarda el nombre del archivo en el servidor
 
+    @JsonIgnore 
     @Column(name = "archivo_adjunto_data", insertable = false, updatable = true)
     private byte[] archivoAdjuntoData;
 
@@ -74,8 +76,8 @@ public class HistorialClinico implements Serializable {
     private Paciente paciente;
 
     @NotNull(message = "La cita es obligatoria")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idCita", referencedColumnName = "idCita", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idCita", referencedColumnName = "idCita", nullable = false, unique = true)
     //(value = "cita") // Nombre único para evitar conflictos
     private CitaConsulta cita;
 

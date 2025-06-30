@@ -85,8 +85,7 @@ public class CitaConsulta implements Serializable {
     @Column(name = "motivo", columnDefinition = "TEXT")
     private String motivo;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idHistorial", referencedColumnName = "idHistorial")
+    @OneToOne(mappedBy = "cita", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)    @JoinColumn(name = "idHistorial", referencedColumnName = "idHistorial")
     //(value = "cita") // Asegurarse de que coincida con la // en HistorialClinico
     private HistorialClinico historialClinico;
 

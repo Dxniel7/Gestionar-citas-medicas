@@ -28,6 +28,6 @@ public class Estatus {
     @Column(name = "nombre", nullable = false)
     private String nombre;
 
-    @OneToMany(mappedBy = "estatus", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "estatus", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<CitaConsulta> citas;
 }

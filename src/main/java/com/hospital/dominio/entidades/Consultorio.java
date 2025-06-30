@@ -60,12 +60,12 @@ public class Consultorio implements Serializable {
     private String descripcion;
 
     // Relación inversa para 'consultorio-citas'
-    @OneToMany(mappedBy = "consultorio", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "consultorio", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     //(value = "consultorio-citas")
     private List<CitaConsulta> citas;
 
     // Relación inversa para 'consultorio-doctor'
     //(value = "recepcionista-consultorio")
-    @OneToMany(mappedBy = "consultorio", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "consultorio", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Recepcionista> recepcionistas;
 }

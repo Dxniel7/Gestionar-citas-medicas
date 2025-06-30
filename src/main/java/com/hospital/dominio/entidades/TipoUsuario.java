@@ -29,7 +29,7 @@ public class TipoUsuario implements Serializable {
     @Column(name = "nombre", nullable = false, length = 50, unique = true)
     private String nombre;
 
-    @OneToMany(mappedBy = "tipoUsuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "tipoUsuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonIgnore 
     private List<Usuario> usuarios;
 }
