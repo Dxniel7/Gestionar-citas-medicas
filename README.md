@@ -1,4 +1,4 @@
-# Sistema de Gestión de Citas Médicas (Backend)
+# Sistema de Gestión de Citas Médicas (Backend y Frontend)
 
 Este repositorio contiene el backend de un sistema para la gestión de citas médicas y acceso a historiales clínicos, desarrollado con Spring Boot.
 
@@ -28,6 +28,4 @@ Puedes acceder a los diferentes componentes de la aplicación a través de las s
 La conexión a la base de datos se maneja internamente dentro del entorno de despliegue de Railway mediante **variables de entorno** (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`). Estas son configuradas directamente en nuestro proyecto de Railway 
 
 La aplicación utiliza estas variables para establecer la conexión con YugabyteDB de forma segura.
-
-El frontend lo podemos encontrar en el siguiente link: `https://github.com/ATL1GOD/Gestion-Citas`
 
