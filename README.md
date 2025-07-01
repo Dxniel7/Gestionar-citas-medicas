@@ -1,4 +1,4 @@
-# Sistema de Gestión de Citas Médicas (Backend)
+# Sistema de Gestión de Citas Médicas (Backend y Frontend)
 
 Este repositorio contiene el backend de un sistema para la gestión de citas médicas y acceso a historiales clínicos, desarrollado con Spring Boot.
 
