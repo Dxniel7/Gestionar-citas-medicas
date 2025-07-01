@@ -50,4 +50,4 @@ public class OpenApiConfig {
                         new Server().url("http://localhost:8042").description("Servidor Local de Desarrollo")
                 ));
     }
-}
+} 
