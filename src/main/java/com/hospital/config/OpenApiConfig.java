@@ -47,6 +47,7 @@ public class OpenApiConfig {
                                 .url("https://opensource.org/license/mit/")))
                 .servers(List.of(
                         new Server().url("https://gestionar-citas-medicas-production.up.railway.app").description("Servidor de Producción (Railway)"),
+                        new Server().url("https://gestionar-citas-medicas.onrender.com").description("Servidor de Producción (Render)"),
                         new Server().url("http://localhost:8042").description("Servidor Local de Desarrollo")
                 ));
     }
