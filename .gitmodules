@@ -1,0 +1,3 @@
+[submodule "frontend-citas"]
+	path = frontend-citas
+	url = https://github.com/ATL1GOD/Gestion-Citas
