@@ -1,6 +1,7 @@
 package com.hospital.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.servers.Server;
@@ -19,8 +20,16 @@ public class OpenApiConfig {
                         .title("API de Gestión de Citas Médicas")
                         .version("1.0.0")
                         .description("""
-                        <h3>Backend de un sistema para la gestión de citas médicas y acceso a historiales clínicos.</h3>
+                        <h3>Aplicación de un sistema para la gestión de citas médicas y acceso a historiales clínicos.</h3>
                         <p>Este proyecto está diseñado para manejar roles diferenciados para pacientes, doctores y recepcionistas, centralizando toda la lógica de negocio en esta API.</p>
+                        ---
+                        <h3>Creadores:</h3>
+                        <ul>
+                            <li>Cardoso Osorio Atl Yosafat</li>
+                            <li>García Cárdenas Ángel Alberto</li>
+                            <li>Guzmán Mares Marian Kelly</li>
+                            <li>Hernández Vázquez Jorge Daniel</li>
+                        </ul>
                         ---
                         <h3>Enlaces de Interés:</h3>
                         <ul>
@@ -28,7 +37,6 @@ public class OpenApiConfig {
                             <li><a href="https://github.com/ATL1GOD/Gestion-Citas" target="_blank"><strong>Repositorio en GitHub Frontend</strong></a></li>
                             <li><a href="https://bespoke-semifreddo-24ffa5.netlify.app/" target="_blank"><strong>Aplicación Frontend (Cliente)</strong></a></li>
                             <li><a href="https://gestionar-citas-medicas.onrender.com/" target="_blank"><strong>Servidor de producción en Render API</strong></a></li>
-
                         </ul>
                         ---
                         <h3>Reportes en PDF:</h3>
